@@ -2,7 +2,7 @@
 #include "Angel.h"
 
 #include "textfile.h"
-
+#define exit(x) while(1);
 
 void printShaderInfoLog(GLuint obj);
 void printProgramInfoLog(GLuint obj);

@@ -47,17 +47,19 @@ void initGPUBuffers(void)
 	glBindVertexArray(vao);
 
 	// Create and initialize a buffer object
-	//GLuint buffer;
-	//glGenBuffers(1, &buffer);
-	//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
+	GLuint buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
 }
 
 
 void shaderSetup(void)
 {
 	// Load shaders and use the resulting shader program
+
 	program = InitShader("vshader1.glsl", "fshader1.glsl");
+
 	glUseProgram(program);
 
 	// Initialize the vertex position attribute from the vertex shader
@@ -104,7 +106,7 @@ void drawPolylineFile(char * filename) {
 	float left, top, right, bottom;
 	file >> std::skipws >> left >> top >> right >> bottom;
 	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	cout << "dimensions" << left << ' ' << top << ' ' << right << ' ' << bottom << std::endl;
+	//cout << "dimensions" << left << ' ' << top << ' ' << right << ' ' << bottom << std::endl;
 	std::vector<std::vector<point2>> polys;
 	int numpolys;
 	file >> numpolys;
@@ -114,17 +116,17 @@ void drawPolylineFile(char * filename) {
 		int numPoints;
 		file >> numPoints;
 		file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		cout << "numPoints" << ' ' << numPoints << std::endl;
+		//cout << "numPoints" << ' ' << numPoints << std::endl;
 		std::vector<point2> thispoly;
 		//glBegin?
 		for (int i = 0; i < numPoints; i++) {
 			float x, y;
 			file >> x >> y;
-			cout << "point " << x << y << std::endl;
+			//cout << "point " << x << y << std::endl;
 			file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			//make gl vertex
 			thispoly.push_back(point2(x, y));
-			cout << point2(x, y) << std::endl;
+			//cout << point2(x, y) << std::endl;
 		}
 		// glEnd?
 		polys.push_back(thispoly);
@@ -164,7 +166,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // single framebuffer, colors in RGB
 	glutInitWindowSize(640, 480);                // Window size: 640 wide X 480 high
 	glutInitWindowPosition(100, 150);               // Top left corner at (100, 150)
-	glutCreateWindow("Starting App");            // Create Window
+	glutCreateWindow("App");            // Create Window
 
 	glewInit();										// init glew
 
