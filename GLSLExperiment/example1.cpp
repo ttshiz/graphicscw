@@ -30,7 +30,7 @@ point2 points[NumPoints];
 point2 birdhd[NumBird];
 GLuint program;
 
-std::vector<unsigned int> bindices;
+std::vector<std::vector<unsigned int>> bindices;
 
 void generateGeometry(void)
 {
@@ -59,10 +59,10 @@ void initGPUBuffers(void)
 	glBindBuffer(GL_ARRAY_BUFFER, birdbuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(birdhd), birdhd, GL_STATIC_DRAW);
 	
-	/*GLuint birdelements;
+	GLuint birdelements;
 	glGenBuffers(1, &birdelements);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, birdelements);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, bindices.size() * sizeof(unsigned int), &bindices[0], GL_STATIC_DRAW);*/
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, bindices.size() * sizeof(unsigned int), &bindices[0], GL_STATIC_DRAW);
 }
 
 
@@ -118,7 +118,6 @@ void drawPolylineFile(char * filename) {
 	float left, top, right, bottom;
 	file >> std::skipws >> left >> top >> right >> bottom;
 	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	//cout << "dimensions" << left << ' ' << top << ' ' << right << ' ' << bottom << std::endl;
 	std::vector<std::vector<point2>> polys;
 	int numpolys;
 	file >> numpolys;
@@ -128,33 +127,24 @@ void drawPolylineFile(char * filename) {
 		int numPoints;
 		file >> numPoints;
 		file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		//cout << "numPoints" << ' ' << numPoints << std::endl;
 		std::vector<point2> thispoly;
+		std::vector<unsigned int> thisline;
 		for (int i = 0; i < numPoints; i++) {
 			float x, y;
 			file >> x >> y;
-			//cout << "point " << x << y << std::endl;
 			file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			//thispoly.push_back(point2(x, y));
-			//cout << "before array " << std::endl;
+			thisline.push_back(pos);
 			birdhd[i] = point2(x, y);
-			//cout << "after array " << std::endl;
-			//cout << point2(x, y) << std::endl;
 			pos++;
 		}
 		//glDrawElements(GL_LINE_STRIP, bindices.size(), GL_UNSIGNED_INT, (void*) 0);
-		polys.push_back(thispoly);
-
-		//GLuint buffer;
-		//glGenBuffers(1, &buffer);
-		//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		//glBufferData(GL_ARRAY_BUFFER, thispoly.size()*sizeof(point2), &thispoly.front(), GL_STATIC_DRAW);
-		//glDrawArrays(GL_LINE_STRIP, 0, thispoly.size());
-		//glDeleteBuffers(1, &buffer);
-		//cout << "Poly done" << std::endl;
-		//glFlush
+		//polys.push_back(thispoly);
+		bindices.push_back(thisline);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(birdhd), birdhd, GL_STATIC_DRAW);
-		glDrawArrays(GL_LINE_STRIP, 0, NumBird);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, bindices.size() * sizeof(unsigned int), &bindices[0], GL_STATIC_DRAW);
+		//glDrawArrays(GL_LINE_STRIP, 0, NumBird);
+		glDrawElements(GL_LINE_STRIP, numpolys, GL_UNSIGNED_INT, &bindices[0]);
 	}
 }
 void myDisplay(void) {
