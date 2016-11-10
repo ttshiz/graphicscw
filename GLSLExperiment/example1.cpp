@@ -1,10 +1,7 @@
-// Starter program for HW 1. 
-// Program draws a triangle. Study the program first
-// The function generateGeometry can be modified to draw many 2D drawings (e.g. 2D Sierpinski Gasket)
-// Generated using randomly selected vertices and bisection
 
 #include "Angel.h"  // Angel.h is homegrown include file, which also includes glew and freeglut
 #include "mat.h"
+#include <limits>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -19,6 +16,8 @@ void shaderSetup(void);
 void display(void);
 void keyboard(unsigned char key, int x, int y);
 void myDisplay(void);
+void changeColor(void);
+void drawPolylineFile(char * filename);
 
 
 typedef vec2 point2;
@@ -100,6 +99,45 @@ void keyboard(unsigned char key, int x, int y)
 	case 033:			// 033 is Escape key octal value
 		exit(1);		// quit program
 		break;
+	case 160:			// 160 is p key octal value
+		cout << "Do p action" << std::endl;
+		break;
+	case 164:			// 164 is t key octal value
+		cout << "Do t action" << std::endl;
+		break;
+	case 145:			// 145 is e key octal value
+		cout <<	"Do e action" << std::endl;
+		break;
+	case 147:			// 147 is g key octal value
+		cout << "Do g action" << std::endl;
+		break;
+	case 146:			// 146 is f key octal value
+		cout << "Do f action" << std::endl;
+		break;
+	case 143:			// 143 is c key octal value
+		cout << "Do c action" << std::endl;
+		changeColor();
+		break;
+	}
+}
+
+void changeColor(void) {
+	GLfloat current_color[4] ;
+	glGetFloatv(GL_CURRENT_COLOR, current_color);
+	int color = 0;
+	for (color = 0; color < 3; color++) {
+		if (current_color[color] != 0) {
+			break;
+		}
+	}
+	if (color == 0) {
+		glColor3f(0.0f, 1.0f, 0.0f);
+	}
+	else if (color == 1) {
+		glColor3f(0.0f, 0.0f, 1.0f);
+	}
+	else {
+		glColor3f(1.0f, 0.0f, 0.0f);
 	}
 }
 
