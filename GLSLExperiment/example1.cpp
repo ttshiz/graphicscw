@@ -7,7 +7,6 @@
 #include <vector>
 // Number of points in polyline
 const int NumPoints = 3;
-const int NumBird = 53*82;
 
 // remember to prototype
 void generateGeometry(void);
@@ -19,17 +18,13 @@ void myDisplay(void);
 void changeColor(void);
 void drawPolylineFile(char * filename);
 
-
 typedef vec2 point2;
 
 using namespace std;
 
 // Array for polyline
 point2 points[NumPoints];
-point2 birdhd[NumBird];
 GLuint program;
-
-std::vector<unsigned int> bindices;
 
 void generateGeometry(void)
 {
@@ -38,7 +33,6 @@ void generateGeometry(void)
 	points[1] = point2(0.0, 0.5);
 	points[2] = point2(0.5, -0.5);
 }
-
 
 void initGPUBuffers(void)
 {
@@ -56,14 +50,7 @@ void initGPUBuffers(void)
 	GLuint birdbuffer;
 	glGenBuffers(1, &birdbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, birdbuffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(birdhd), birdhd, GL_STATIC_DRAW);
-	
-	/*GLuint birdelements;
-	glGenBuffers(1, &birdelements);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, birdelements);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, bindices.size() * sizeof(unsigned int), &bindices[0], GL_STATIC_DRAW);*/
 }
-
 
 void shaderSetup(void)
 {
@@ -81,7 +68,6 @@ void shaderSetup(void)
 	glClearColor(1.0, 1.0, 1.0, 1.0);        // sets white as color used to clear screen
 }
 
-
 void display(void)
 {
 	// All drawing happens in display function
@@ -90,31 +76,31 @@ void display(void)
 	glFlush();										// force output to graphics hardware
 }
 
-
 void keyboard(unsigned char key, int x, int y)
 {
 	// keyboard handler
-
+	cout << key << std::endl;
+	cout.flush();
 	switch (key) {
 	case 033:			// 033 is Escape key octal value
 		exit(1);		// quit program
 		break;
-	case 160:			// 160 is p key octal value
+	case 0160:			// 0160 is p key octal value
 		cout << "Do p action" << std::endl;
 		break;
-	case 164:			// 164 is t key octal value
+	case 0164:			// 0164 is t key octal value
 		cout << "Do t action" << std::endl;
 		break;
-	case 145:			// 145 is e key octal value
+	case 0145:			// 0145 is e key octal value
 		cout <<	"Do e action" << std::endl;
 		break;
-	case 147:			// 147 is g key octal value
+	case 0147:			// 0147 is g key octal value
 		cout << "Do g action" << std::endl;
 		break;
-	case 146:			// 146 is f key octal value
+	case 0146:			// 0146 is f key octal value
 		cout << "Do f action" << std::endl;
 		break;
-	case 143:			// 143 is c key octal value
+	case 0143:			// 0143 is c key octal value
 		cout << "Do c action" << std::endl;
 		changeColor();
 		break;
@@ -126,12 +112,14 @@ void changeColor(void) {
 	glGetFloatv(GL_CURRENT_COLOR, current_color);
 	int color = 0;
 	for (color = 0; color < 3; color++) {
+		//cout << color << std::endl;
 		if (current_color[color] != 0) {
 			break;
 		}
 	}
 	if (color == 0) {
 		glColor3f(0.0f, 1.0f, 0.0f);
+		//cout << "red to green" << std::endl;
 	}
 	else if (color == 1) {
 		glColor3f(0.0f, 0.0f, 1.0f);
@@ -139,6 +127,7 @@ void changeColor(void) {
 	else {
 		glColor3f(1.0f, 0.0f, 0.0f);
 	}
+	myDisplay();
 }
 
 void drawPolylineFile(char * filename) {
@@ -156,7 +145,6 @@ void drawPolylineFile(char * filename) {
 	float left, top, right, bottom;
 	file >> std::skipws >> left >> top >> right >> bottom;
 	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	//cout << "dimensions" << left << ' ' << top << ' ' << right << ' ' << bottom << std::endl;
 	std::vector<std::vector<point2>> polys;
 	int numpolys;
 	file >> numpolys;
@@ -166,35 +154,20 @@ void drawPolylineFile(char * filename) {
 		int numPoints;
 		file >> numPoints;
 		file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-		//cout << "numPoints" << ' ' << numPoints << std::endl;
 		std::vector<point2> thispoly;
-		for (int i = 0; i < numPoints; i++) {
+		int i;
+		for (i = 0; i < numPoints; i++) {
 			float x, y;
 			file >> x >> y;
-			//cout << "point " << x << y << std::endl;
 			file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			//thispoly.push_back(point2(x, y));
-			//cout << "before array " << std::endl;
-			birdhd[i] = point2(x, y);
-			//cout << "after array " << std::endl;
-			//cout << point2(x, y) << std::endl;
-			pos++;
+			thispoly.push_back(point2(x, y));
 		}
-		//glDrawElements(GL_LINE_STRIP, bindices.size(), GL_UNSIGNED_INT, (void*) 0);
 		polys.push_back(thispoly);
-
-		//GLuint buffer;
-		//glGenBuffers(1, &buffer);
-		//glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		//glBufferData(GL_ARRAY_BUFFER, thispoly.size()*sizeof(point2), &thispoly.front(), GL_STATIC_DRAW);
-		//glDrawArrays(GL_LINE_STRIP, 0, thispoly.size());
-		//glDeleteBuffers(1, &buffer);
-		//cout << "Poly done" << std::endl;
-		//glFlush
-		glBufferData(GL_ARRAY_BUFFER, sizeof(birdhd), birdhd, GL_STATIC_DRAW);
-		glDrawArrays(GL_LINE_STRIP, 0, NumBird);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(point2)*i, &thispoly[0], GL_STATIC_DRAW);
+		glDrawArrays(GL_LINE_STRIP, 0, i);
 	}
 }
+
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	float w, h;
@@ -203,11 +176,15 @@ void myDisplay(void) {
 
 	w = width / 10;
 	h = height / 6;
+
+	char * images[] = {"dino.dat", "birdhead.dat", "dragon.dat", "house.dat", "knight.dat", "rex.dat"
+		, "scene.dat", "usa.dat", "vinci.dat", "dragon.dat"};  // dino.dat
 	for (int k = 0; k < 10; k++) {
 		glViewport(k*w, h * 5, w, h);
-		drawPolylineFile("birdhead.dat");  // need to fix
-		//DrawArrays(GL_LINE_STRIP, 0, NumPoints);
+		drawPolylineFile(images[k]);  // need to fix
 	}
+	glViewport(0, 0, w, h);
+	drawPolylineFile("vinci.dat");
 	glFlush();
 }
 
@@ -215,7 +192,6 @@ void myDisplay(void) {
 int main(int argc, char **argv)
 {
 	// main function: program starts here
-
 	glutInit(&argc, argv);                       // intialize GLUT  
 	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); // single framebuffer, colors in RGB
 	glutInitWindowSize(640, 480);                // Window size: 640 wide X 480 high
