@@ -18,6 +18,7 @@ void myDisplay(void);
 void changeColor(void);
 void drawPolylineFile(char * filename);
 void reshape(double W, double H);
+void reshape2(int k, int W, int H);
 
 typedef vec2 point2;
 
@@ -80,8 +81,6 @@ glFlush();										// force output to graphics hardware
 void keyboard(unsigned char key, int x, int y)
 {
 	// keyboard handler
-	cout << key << std::endl;
-	cout.flush();
 	switch (key) {
 	case 033:			// 033 is Escape key octal value
 		exit(1);		// quit program
@@ -145,6 +144,9 @@ void drawPolylineFile(char * filename) {
 	}
 	float left, top, right, bottom;
 	file >> std::skipws >> left >> top >> right >> bottom;
+	mat4 ortho = Ortho2D(left, right, bottom, top);
+	GLint ProjLoc = glGetUniformLocation(program, "Proj");
+	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
 	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 	std::vector<std::vector<point2>> polys;
 	int numpolys;
@@ -177,10 +179,25 @@ void reshape(int W, int H) {
 		glViewport(0, 0, W, (GLsizei)((float)W / (float)R));
 	}
 	else if (R < ((float)W / (float)H)) {
-		glViewport(0, 0, (GLsizei)((float)H / (float)R), H);
+		glViewport(0, 0, (GLsizei)(H * R), H);
 	}
 	else {
 		glViewport(0, 0, W, H);
+	}
+}
+
+void reshape2(int k, int W, int H) {
+	float width = glutGet(GLUT_WINDOW_WIDTH);
+	float height = glutGet(GLUT_WINDOW_HEIGHT);
+	float R = width / height;
+	if (R > ((float)W / (float)H)) {
+		glViewport(k*W, H*5, W, (GLsizei)((float)W / (float)R));
+	}
+	else if (R < ((float)W / (float)H)) {
+		glViewport(k*W, H*5, (GLsizei)(H * R), H);
+	}
+	else {
+		glViewport(k*W, H*5, W, H);
 	}
 }
 
@@ -196,11 +213,14 @@ void myDisplay(void) {
 	char * images[] = {"dino.dat", "birdhead.dat", "dragon.dat", "house.dat", "knight.dat", "rex.dat"
 		, "scene.dat", "usa.dat", "vinci.dat", "dragon.dat"};  // dino.dat
 	for (int k = 0; k < 10; k++) {
-		glViewport(k*w, h * 5, w, h);
-		drawPolylineFile(images[k]);  // need to fix
+		//glViewport(k*w, h * 5, w, h);
+		reshape2(k, (int)w, (int)h);
+		drawPolylineFile(images[k]);  
 	}
-	//mat4 ortho = Ortho2D(0.0, 1.0, 0.0, 1.0);
-	glViewport(0, 0, w, h);
+	mat4 ortho = Ortho2D(0.0, 1.0, 0.0, 1.0);
+	GLint ProjLoc = glGetUniformLocation(program, "Proj");
+	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
+	reshape((int)width, (int)(5*height/6));
 	drawPolylineFile("vinci.dat");
 	glFlush();
 }
@@ -223,6 +243,7 @@ int main(int argc, char **argv)
 
 	float width = glutGet(GLUT_WINDOW_WIDTH);
 	float height = glutGet(GLUT_WINDOW_HEIGHT);
+	cout << width << height << std::endl;
 	mat4 ortho = Ortho2D(0, width, 0, height);
 	GLint ProjLoc = glGetUniformLocation(program, "Proj");
 	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
