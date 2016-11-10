@@ -17,6 +17,7 @@ void keyboard(unsigned char key, int x, int y);
 void myDisplay(void);
 void changeColor(void);
 void drawPolylineFile(char * filename);
+void reshape(double W, double H);
 
 typedef vec2 point2;
 
@@ -72,8 +73,8 @@ void display(void)
 {
 	// All drawing happens in display function
 	glClear(GL_COLOR_BUFFER_BIT);                // clear window
-	glDrawArrays(GL_LINE_LOOP, 0, NumPoints);    // draw the points
-	glFlush();										// force output to graphics hardware
+glDrawArrays(GL_LINE_LOOP, 0, NumPoints);    // draw the points
+glFlush();										// force output to graphics hardware
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -92,7 +93,7 @@ void keyboard(unsigned char key, int x, int y)
 		cout << "Do t action" << std::endl;
 		break;
 	case 0145:			// 0145 is e key octal value
-		cout <<	"Do e action" << std::endl;
+		cout << "Do e action" << std::endl;
 		break;
 	case 0147:			// 0147 is g key octal value
 		cout << "Do g action" << std::endl;
@@ -108,7 +109,7 @@ void keyboard(unsigned char key, int x, int y)
 }
 
 void changeColor(void) {
-	GLfloat current_color[4] ;
+	GLfloat current_color[4];
 	glGetFloatv(GL_CURRENT_COLOR, current_color);
 	int color = 0;
 	for (color = 0; color < 3; color++) {
@@ -168,6 +169,21 @@ void drawPolylineFile(char * filename) {
 	}
 }
 
+void reshape(int W, int H) {
+	float width = glutGet(GLUT_WINDOW_WIDTH);
+	float height = glutGet(GLUT_WINDOW_HEIGHT);
+	float R = width / height;
+	if (R > ((float)W / (float)H)) {
+		glViewport(0, 0, W, (GLsizei)((float)W / (float)R));
+	}
+	else if (R < ((float)W / (float)H)) {
+		glViewport(0, 0, (GLsizei)((float)H / (float)R), H);
+	}
+	else {
+		glViewport(0, 0, W, H);
+	}
+}
+
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT);
 	float w, h;
@@ -183,6 +199,7 @@ void myDisplay(void) {
 		glViewport(k*w, h * 5, w, h);
 		drawPolylineFile(images[k]);  // need to fix
 	}
+	//mat4 ortho = Ortho2D(0.0, 1.0, 0.0, 1.0);
 	glViewport(0, 0, w, h);
 	drawPolylineFile("vinci.dat");
 	glFlush();
@@ -211,6 +228,7 @@ int main(int argc, char **argv)
 	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
 
 	glutDisplayFunc(myDisplay);
+	glutReshapeFunc(reshape);
 	//glutDisplayFunc( display );                    // Register display callback function
 	glutKeyboardFunc(keyboard);                  // Register keyboard callback function
 
