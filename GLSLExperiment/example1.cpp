@@ -210,7 +210,6 @@ void drawPolylineFile(char * filename) {
 	int numpolys;
 	file >> numpolys;
 	file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	int pos = 0;
 	for (int p = 0; p < numpolys; p++) {
 		int numPoints;
 		file >> numPoints;
@@ -329,7 +328,6 @@ int main(int argc, char **argv)
 
 	float width = glutGet(GLUT_WINDOW_WIDTH);
 	float height = glutGet(GLUT_WINDOW_HEIGHT);
-	cout << width << height << std::endl;
 	mat4 ortho = Ortho2D(0, width, 0, height);
 	GLint ProjLoc = glGetUniformLocation(program, "Proj");
 	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
