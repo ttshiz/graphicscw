@@ -5,35 +5,89 @@
 #include <fstream>
 #include <string>
 #include <vector>
-// Number of points in polyline
-const int NumPoints = 3;
+#include <random>
+#include <cstdlib>
 
 // remember to prototype
-void generateGeometry(void);
+void generateGinger(void);
 void initGPUBuffers(void);
 void shaderSetup(void);
-void display(void);
+void displayGinger(void);
 void keyboard(unsigned char key, int x, int y);
 void myDisplay(void);
 void changeColor(void);
 void drawPolylineFile(char * filename);
-void reshape(double W, double H);
-void reshape2(int k, int W, int H);
+void reshape(int W, int H);
+void reshape2(int m, int n, int W, int H);
+void myDisplayT(void);
 
 typedef vec2 point2;
 
 using namespace std;
 
-// Array for polyline
-point2 points[NumPoints];
+const int NumGinger = 1000;
+const int NumFern = 1000;
 GLuint program;
+point2 gingerpoints[NumGinger];
+point2 fernpoints[NumFern];
 
-void generateGeometry(void)
+void generateGinger(void){
+	int X = 115;
+	int Y = 121;
+	int M = 40;
+	int L = 3;
+	gingerpoints[0] = point2(X, Y);
+	for(int n = 1; n < NumGinger; n++) {
+		int newX = M*(1 + 2 * L) - Y + abs(X - L*M);
+		int newY = X;
+		gingerpoints[n] = point2(newX, newY);
+	}
+}
+
+void generateFern(void) {
+	float X = 0;
+	float Y = 0;
+	for (int i = 0; i < NumFern; i++) {
+		int random_func = (rand() % (int)(3 + 1));
+		if (random_func == 0) {
+			int X = 0.0*X + 0.0*Y + 0;
+			int Y = 0.0*X + 0.16*Y + 0.0;
+			fernpoints[i] = point2(X, Y);
+		}
+		else if (random_func == 1) {
+			int X = 0.20*X + -0.26*Y + 0.0;
+			int Y = 0.23*X + 0.22*Y + 1.6;
+			fernpoints[i] = point2(X, Y);
+		}
+		else if (random_func == 2) {
+			int X = -0.15*X + 0.28*Y + 0.0;
+			int Y = 0.26*X + 0.24*Y + 0.44;
+			fernpoints[i] = point2(X, Y);
+		}
+		else if (random_func == 3) {
+			int X = 0.85*X + 0.04*Y + 0.0;
+			int Y = -0.04*X + 0.85*Y + 1.6;
+			fernpoints[i] = point2(X, Y);
+		}
+	}
+}
+
+void displayGinger(void)
 {
-	// Specifiy the vertices for a triangle
-	points[0] = point2(-0.5, -0.5);
-	points[1] = point2(0.0, 0.5);
-	points[2] = point2(0.5, -0.5);
+	// All drawing happens in display function
+	glClear(GL_COLOR_BUFFER_BIT);                // clear window
+	glBufferData(GL_ARRAY_BUFFER, sizeof(point2)*NumGinger, &gingerpoints[0], GL_STATIC_DRAW);
+	glDrawArrays(GL_POINTS, 0, NumGinger);    // draw the points
+	glFlush();										// force output to graphics hardware
+}
+
+void displayFern(void)
+{
+	// All drawing happens in display function
+	glClear(GL_COLOR_BUFFER_BIT);                // clear window
+	glBufferData(GL_ARRAY_BUFFER, sizeof(point2)*NumFern, &fernpoints[0], GL_STATIC_DRAW);
+	glDrawArrays(GL_POINTS, 0, NumGinger);    // draw the points
+	glFlush();										// force output to graphics hardware
 }
 
 void initGPUBuffers(void)
@@ -44,11 +98,6 @@ void initGPUBuffers(void)
 	glBindVertexArray(vao);
 
 	// Create and initialize a buffer object
-	GLuint buffer;
-	glGenBuffers(1, &buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(points), points, GL_STATIC_DRAW);
-
 	GLuint birdbuffer;
 	glGenBuffers(1, &birdbuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, birdbuffer);
@@ -70,35 +119,38 @@ void shaderSetup(void)
 	glClearColor(1.0, 1.0, 1.0, 1.0);        // sets white as color used to clear screen
 }
 
-void display(void)
-{
-	// All drawing happens in display function
-	glClear(GL_COLOR_BUFFER_BIT);                // clear window
-glDrawArrays(GL_LINE_LOOP, 0, NumPoints);    // draw the points
-glFlush();										// force output to graphics hardware
-}
-
 void keyboard(unsigned char key, int x, int y)
 {
 	// keyboard handler
+	GLint ColorLoc = glGetUniformLocation(program, "newColor");
+	vec4 nColor = vec4(1.0, 0.0, 0.0, 1.0);
 	switch (key) {
 	case 033:			// 033 is Escape key octal value
 		exit(1);		// quit program
 		break;
 	case 0160:			// 0160 is p key octal value
 		cout << "Do p action" << std::endl;
+		glUniform4fv(ColorLoc, 1, nColor);
+		glutDisplayFunc(myDisplay);
+		glutPostRedisplay();
 		break;
 	case 0164:			// 0164 is t key octal value
 		cout << "Do t action" << std::endl;
+		glutDisplayFunc(myDisplayT);
+		glutPostRedisplay();
 		break;
 	case 0145:			// 0145 is e key octal value
 		cout << "Do e action" << std::endl;
 		break;
 	case 0147:			// 0147 is g key octal value
 		cout << "Do g action" << std::endl;
+		glutDisplayFunc(displayGinger);
+		glutPostRedisplay();
 		break;
 	case 0146:			// 0146 is f key octal value
 		cout << "Do f action" << std::endl;
+		glutDisplayFunc(displayFern);
+		glutPostRedisplay();
 		break;
 	case 0143:			// 0143 is c key octal value
 		cout << "Do c action" << std::endl;
@@ -108,26 +160,32 @@ void keyboard(unsigned char key, int x, int y)
 }
 
 void changeColor(void) {
+	GLint ColorLoc = glGetUniformLocation(program, "newColor");
+	GLfloat * colorParams = new GLfloat[4];
+	glGetUniformfv(program, ColorLoc, colorParams);
 	GLfloat current_color[4];
-	glGetFloatv(GL_CURRENT_COLOR, current_color);
+	for (int i = 0; i < 4; i++) {
+		current_color[i] = colorParams[i];
+	}
 	int color = 0;
 	for (color = 0; color < 3; color++) {
-		//cout << color << std::endl;
 		if (current_color[color] != 0) {
 			break;
 		}
 	}
 	if (color == 0) {
-		glColor3f(0.0f, 1.0f, 0.0f);
-		//cout << "red to green" << std::endl;
+		vec4 nColor = vec4(0.0, 1.0, 0.0, 1.0);
+		glUniform4fv(ColorLoc, 1, nColor);
 	}
 	else if (color == 1) {
-		glColor3f(0.0f, 0.0f, 1.0f);
+		vec4 nColor = vec4(0.0, 0.0, 1.0, 1.0);
+		glUniform4fv(ColorLoc, 1, nColor);
 	}
 	else {
-		glColor3f(1.0f, 0.0f, 0.0f);
+		vec4 nColor = vec4(1.0, 0.0, 0.0, 1.0);
+		glUniform4fv(ColorLoc, 1, nColor);
 	}
-	myDisplay();
+	glutPostRedisplay();
 }
 
 void drawPolylineFile(char * filename) {
@@ -186,18 +244,18 @@ void reshape(int W, int H) {
 	}
 }
 
-void reshape2(int k, int W, int H) {
+void reshape2(int m, int n, int W, int H) {
 	float width = glutGet(GLUT_WINDOW_WIDTH);
 	float height = glutGet(GLUT_WINDOW_HEIGHT);
 	float R = width / height;
 	if (R > ((float)W / (float)H)) {
-		glViewport(k*W, H*5, W, (GLsizei)((float)W / (float)R));
+		glViewport(m*W, H*n, W, (GLsizei)((float)W / (float)R));
 	}
 	else if (R < ((float)W / (float)H)) {
-		glViewport(k*W, H*5, (GLsizei)(H * R), H);
+		glViewport(m*W, H*n, (GLsizei)(H * R), H);
 	}
 	else {
-		glViewport(k*W, H*5, W, H);
+		glViewport(m*W, H*n, W, H);
 	}
 }
 
@@ -213,8 +271,7 @@ void myDisplay(void) {
 	char * images[] = {"dino.dat", "birdhead.dat", "dragon.dat", "house.dat", "knight.dat", "rex.dat"
 		, "scene.dat", "usa.dat", "vinci.dat", "dragon.dat"};  // dino.dat
 	for (int k = 0; k < 10; k++) {
-		//glViewport(k*w, h * 5, w, h);
-		reshape2(k, (int)w, (int)h);
+		reshape2(k, 5, (int)w, (int)h);
 		drawPolylineFile(images[k]);  
 	}
 	mat4 ortho = Ortho2D(0.0, 1.0, 0.0, 1.0);
@@ -222,6 +279,35 @@ void myDisplay(void) {
 	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
 	reshape((int)width, (int)(5*height/6));
 	drawPolylineFile("vinci.dat");
+	glFlush();
+}
+
+void myDisplayT(void) {
+	glClear(GL_COLOR_BUFFER_BIT);
+	float w, h;
+	float width = glutGet(GLUT_WINDOW_WIDTH);
+	float height = glutGet(GLUT_WINDOW_HEIGHT);
+
+	w = width / 10;
+	h = height / 6;
+
+	char * images[] = { "dino.dat", "birdhead.dat", "dragon.dat", "house.dat", "knight.dat", "rex.dat"
+		, "scene.dat", "usa.dat", "vinci.dat", "dragon.dat" };  // dino.dat
+	for (int k = 0; k < 10; k++) {
+		//glViewport(k*w, h * 5, w, h);
+		reshape2(k, 5, (int)w, (int)h);
+		drawPolylineFile(images[k]);
+	}
+
+	float mw = width / 5;
+	float mh = (height - h) / 5;
+	for (int j = 0; j < 5; j++) {
+		for (int l = 0; l < 5; l++) {
+			reshape2(j, l, (int) mw, (int)mh);
+			int random_file = (rand() % (int)(9 + 1));
+			drawPolylineFile(images[random_file]);
+		}
+	}
 	glFlush();
 }
 
@@ -237,7 +323,7 @@ int main(int argc, char **argv)
 
 	glewInit();										// init glew
 
-	generateGeometry();                           // Call function that generates points to draw
+	generateGinger();                           // Call function that generates points to draw
 	initGPUBuffers();							   // Create GPU buffers
 	shaderSetup();                                // Connect this .cpp file to shader file
 
@@ -247,6 +333,10 @@ int main(int argc, char **argv)
 	mat4 ortho = Ortho2D(0, width, 0, height);
 	GLint ProjLoc = glGetUniformLocation(program, "Proj");
 	glUniformMatrix4fv(ProjLoc, 1, GL_TRUE, ortho);
+
+	vec4 startColor = vec4(1.0, 0.0, 0.0, 1.0);
+	GLint ColorLoc = glGetUniformLocation(program, "newColor");
+	glUniform4fv(ColorLoc, 1, startColor);
 
 	glutDisplayFunc(myDisplay);
 	glutReshapeFunc(reshape);
